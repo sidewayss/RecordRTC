@@ -19,8 +19,9 @@ function serverHandler(request, response) {
         return;
     }
 
-    fs.exists(filename, function(exists) {
-        if (!exists) {
+    fs.stat(filename, function(err, stats) {
+        if (err) {
+            console.log(err.message);
             response.writeHead(404, {
                 'Content-Type': 'text/plain'
             });
@@ -33,10 +34,8 @@ function serverHandler(request, response) {
             return;
         }
 
-        if (fs.statSync(filename).isDirectory() && !isWin) {
-            filename += '/index.html';
-        } else if (fs.statSync(filename).isDirectory() && !!isWin) {
-            filename += '\\index.html';
+        if (stats.isDirectory()) {
+            filename += (isWin ? '\\' : '/') + 'index.html';
         }
 
         fs.readFile(filename, 'binary', function(err, file) {
